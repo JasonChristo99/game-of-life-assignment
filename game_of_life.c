@@ -147,7 +147,7 @@ uint8_t apply_rules(int current_state, int neighbors) {
 
 // Function to run one iteration of the Game of Life for the local region of the board
 void run_game_of_life(uint8_t *current, uint8_t *next, int block_size) {
-//#pragma omp parallel for collapse(2) num_threads(NUM_THREADS)
+#pragma omp parallel for collapse(2) num_threads(NUM_THREADS)
     for (int i = 1; i <= block_size; ++i) {
         for (int j = 0; j < BOARD_SIZE; ++j) {
             // Count neighbors for each cell
