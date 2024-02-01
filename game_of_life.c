@@ -223,7 +223,7 @@ int main(int argc, char *argv[]) {
     double start_time = MPI_Wtime();
 
     for (int iter = 0; iter < MAX_ITERATIONS; ++iter) {
-        printf("Rank %d: Iteration %d, Population = %d\n", rank, iter, board_population(local_board, block_size));
+        // printf("Rank %d: Iteration %d, Population = %d\n", rank, iter, board_population(local_board, block_size));
 
 //        print_region(local_board, GROWER_START_ROW, GROWER_START_COL, GROWER_HEIGHT, GROWER_WIDTH);
         // Verification checks for specific iterations
