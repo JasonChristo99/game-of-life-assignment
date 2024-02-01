@@ -1,22 +1,31 @@
-RLES = beehive.rle glider.rle grower.rle
-HEADERS = $(RLES:.rle=.h)
-JUNK =
-EXPENSIVE_JUNK = $(HEADERS)
-TAR_FILES = $(HEADERS) $(RLES) convert_rle.py Makefile
-TAR_FILE = game-of-life-assignment.tar.gz
+# Compiler
+CC = mpicc
 
-all:  $(HEADERS)
+# Compiler flags
+CFLAGS = -Wall -Wextra -std=c11 -O3 -fopenmp -g
 
-tar: $(TAR_FILE)
+# Executable name
+EXECUTABLE = game_of_life
 
-$(TAR_FILE): $(TAR_FILES)
-	tar cvfz $(TAR_FILE) $(TAR_FILES)
+# Source files
+SRC = game_of_life.c
+
+# Object files
+OBJ = $(SRC:.c=.o)
+
+# Specify existing header files
+HEADERS = beehive.h glider.h grower.h
+
+all: $(EXECUTABLE) $(HEADERS)
+
+$(EXECUTABLE): $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) -o $(EXECUTABLE)
+
+# Rule to compile source files
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(JUNK)
+	rm -f $(EXECUTABLE) $(OBJ)
 
-empty:
-	rm -rf $(JUNK) $(EXPENSIVE_JUNK)
 
-%.h: %.rle
-	python3 convert_rle.py $<
