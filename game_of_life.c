@@ -217,9 +217,8 @@ int main(int argc, char *argv[]) {
     uint8_t *next_gen_board = (uint8_t *) malloc(BOARD_SIZE * (block_size + 2) * sizeof(uint8_t));
 
     // Initialize the local board with a specific pattern
-//    initialize_board(local_board);
     initialize_local_board(local_board, block_start, block_size);
-//    MPI_Barrier(MPI_COMM_WORLD);
+
     // Record the start time for measuring execution time
     double start_time = MPI_Wtime();
 
@@ -247,7 +246,6 @@ int main(int argc, char *argv[]) {
             MPI_Irecv(&local_board[INDEX(0, 0)], BOARD_SIZE, MPI_UINT8_T, left_neighbour, 0, MPI_COMM_WORLD,
                       &left_recv_request);
         }
-//    printf("Rank %d reached here\n", rank);
 
         if (block_end < BOARD_SIZE) {
             // Communication with the right neighbor
@@ -280,7 +278,7 @@ int main(int argc, char *argv[]) {
     double end_time = MPI_Wtime();
 
     // Print total execution time
-    printf("Total execution time: %f seconds\n", end_time - start_time);
+//    printf("Total execution time: %f seconds\n", end_time - start_time);
 
     // Print the final time : the time taken by the slowest process to complete the execution
     double max_time;
