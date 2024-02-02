@@ -27,7 +27,7 @@
 #define DEBUG_PRINT_RANK_INFO 0
 #define DEBUG_PRINT_REGION 0
 #define DEBUG_RUN_VERIFICATION_CHECKS 0
-#define DEBUG_PRINT_TOTAL_POPULATION 1
+#define DEBUG_PRINT_TOTAL_POPULATION 0
 #define DEBUG_PRINT_EXECUTION_TIME 1
 
 // Include patterns
@@ -156,7 +156,7 @@ int total_board_population(uint8_t *local_board, int block_size) {
 }
 
 // Function to perform verification checks at specific iterations
-void run_verification(uint8_t *board, int iter, int block_size) {
+void run_verification(uint8_t *local_board, int iter, int block_size) {
     // Check total population for specific iterations
     if (iter == 10) {
         int total_population = total_board_population(local_board, block_size);
