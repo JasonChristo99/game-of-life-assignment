@@ -1,117 +1,117 @@
-Testing for 1 processes/threads
-Running with 1 processes / 1 threads
+Testing for total 1 processes/threads
+Running with 1 processes / 1 threads per process
 Max execution time: 206.133195 seconds
 -----------DONE--------------
-Testing for 2 processes/threads
-Running with 1 processes / 2 threads
+Testing for total 2 processes/threads
+Running with 1 processes / 2 threads per process
 Max execution time: 103.484263 seconds
 -----------DONE--------------
-Running with 2 processes / 1 threads
+Running with 2 processes / 1 threads per process
 Max execution time: 103.491485 seconds
 -----------DONE--------------
-Testing for 4 processes/threads
-Running with 1 processes / 4 threads
+Testing for total 4 processes/threads
+Running with 1 processes / 4 threads per process
 Max execution time: 51.930277 seconds
 -----------DONE--------------
-Running with 2 processes / 2 threads
+Running with 2 processes / 2 threads per process
 Max execution time: 51.929517 seconds
 -----------DONE--------------
-Running with 4 processes / 1 threads
+Running with 4 processes / 1 threads per process
 Max execution time: 51.907608 seconds
 -----------DONE--------------
-Testing for 8 processes/threads
-Running with 1 processes / 8 threads
+Testing for total 8 processes/threads
+Running with 1 processes / 8 threads per process
 Max execution time: 26.050067 seconds
 -----------DONE--------------
-Running with 2 processes / 4 threads
+Running with 2 processes / 4 threads per process
 Max execution time: 26.005198 seconds
 -----------DONE--------------
-Running with 4 processes / 2 threads
+Running with 4 processes / 2 threads per process
 Max execution time: 26.036027 seconds
 -----------DONE--------------
-Running with 8 processes / 1 threads
+Running with 8 processes / 1 threads per process
 Max execution time: 25.957004 seconds
 -----------DONE--------------
-Testing for 16 processes/threads
-Running with 1 processes / 16 threads
+Testing for total 16 processes/threads
+Running with 1 processes / 16 threads per process
 Max execution time: 13.020182 seconds
 -----------DONE--------------
-Running with 2 processes / 8 threads
+Running with 2 processes / 8 threads per process
 Max execution time: 13.044554 seconds
 -----------DONE--------------
-Running with 4 processes / 4 threads
+Running with 4 processes / 4 threads per process
 Max execution time: 13.068875 seconds
 -----------DONE--------------
-Running with 8 processes / 2 threads
+Running with 8 processes / 2 threads per process
 Max execution time: 13.057330 seconds
 -----------DONE--------------
-Running with 16 processes / 1 threads
+Running with 16 processes / 1 threads per process
 Max execution time: 13.000273 seconds
 -----------DONE--------------
-Testing for 32 processes/threads
-Running with 1 processes / 32 threads
+Testing for total 32 processes/threads
+Running with 1 processes / 32 threads per process
 Max execution time: 6.519567 seconds
 -----------DONE--------------
-Running with 2 processes / 16 threads
+Running with 2 processes / 16 threads per process
 Max execution time: 6.532024 seconds
 -----------DONE--------------
-Running with 4 processes / 8 threads
+Running with 4 processes / 8 threads per process
 Max execution time: 6.513430 seconds
 -----------DONE--------------
-Running with 8 processes / 4 threads
+Running with 8 processes / 4 threads per process
 Max execution time: 6.515856 seconds
 -----------DONE--------------
-Running with 16 processes / 2 threads
+Running with 16 processes / 2 threads per process
 Max execution time: 6.492571 seconds
 -----------DONE--------------
-Running with 32 processes / 1 threads
+Running with 32 processes / 1 threads per process
 Max execution time: 6.438125 seconds
 -----------DONE--------------
-Testing for 64 processes/threads
-Running with 1 processes / 64 threads
+Testing for total 64 processes/threads
+Running with 1 processes / 64 threads per process
 Max execution time: 3.341772 seconds
 -----------DONE--------------
-Running with 2 processes / 32 threads
+Running with 2 processes / 32 threads per process
 Max execution time: 3.307247 seconds
 -----------DONE--------------
-Running with 4 processes / 16 threads
+Running with 4 processes / 16 threads per process
 Max execution time: 3.267373 seconds
 -----------DONE--------------
-Running with 8 processes / 8 threads
+Running with 8 processes / 8 threads per process
 Max execution time: 3.318634 seconds
 -----------DONE--------------
-Running with 16 processes / 4 threads
+Running with 16 processes / 4 threads per process
 Max execution time: 3.294378 seconds
 -----------DONE--------------
-Running with 32 processes / 2 threads
+Running with 32 processes / 2 threads per process
 Max execution time: 3.262157 seconds
 -----------DONE--------------
-Running with 64 processes / 1 threads
+Running with 64 processes / 1 threads per process
 Max execution time: 3.162100 seconds
 -----------DONE--------------
-Testing for 128 processes/threads
-Running with 1 processes / 128 threads
+Testing for total 128 processes/threads
+Running with 1 processes / 128 threads per process
 Max execution time: 9.926397 seconds
 -----------DONE--------------
-Running with 2 processes / 64 threads
+Running with 2 processes / 64 threads per process
 Max execution time: 2.182159 seconds
 -----------DONE--------------
-Running with 4 processes / 32 threads
+Running with 4 processes / 32 threads per process
 Max execution time: 6.728790 seconds
 -----------DONE--------------
-Running with 8 processes / 16 threads
+Running with 8 processes / 16 threads per process
 Max execution time: 7.027649 seconds
 -----------DONE--------------
-Running with 16 processes / 8 threads
+Running with 16 processes / 8 threads per process
 Max execution time: 7.674845 seconds
 -----------DONE--------------
-Running with 32 processes / 4 threads
+Running with 32 processes / 4 threads per process
 Max execution time: 2.285173 seconds
 -----------DONE--------------
-Running with 64 processes / 2 threads
+Running with 64 processes / 2 threads per process
 Max execution time: 1.958015 seconds
 -----------DONE--------------
-Running with 128 processes / 1 threads
+Running with 128 processes / 1 threads per process
 Max execution time: 7.117786 seconds
 -----------DONE--------------
 
