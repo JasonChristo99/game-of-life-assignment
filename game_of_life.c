@@ -58,38 +58,6 @@ void print_region(uint8_t *board, int startRow, int startCol, int height, int wi
     }
 }
 
-// Function to print the entire board
-void print_board(uint8_t *board) {
-    print_region(board, 0, 0, BOARD_SIZE, BOARD_SIZE);
-}
-
-// Function to write the board to a file
-void write_board(uint8_t *board, char *filename, int iteration) {
-    FILE *fp;
-    if (iteration == 0)
-        fp = fopen(filename, "w");
-    else
-        fp = fopen(filename, "a");
-
-    fprintf(fp, "--------Iteration %d--------\n", iteration);
-    for (int i = 0; i < BOARD_SIZE; ++i) {
-        for (int j = 0; j < BOARD_SIZE - 1; ++j) {
-            fprintf(fp, "%d,", board[INDEX(i, j)]);
-        }
-        fprintf(fp, "%d\n", board[INDEX(i, BOARD_SIZE - 1)]);
-    }
-    fclose(fp);
-}
-
-// Function to initialize the board with a specific pattern
-//void initialize_board(uint8_t *board) {
-//    for (int i = 0; i < GROWER_HEIGHT; ++i) {
-//        for (int j = 0; j < GROWER_WIDTH; ++j) {
-//            board[INDEX(GROWER_START_ROW + i, GROWER_START_COL + j)] = grower[i][j];
-//        }
-//    }
-//}
-
 // Function to initialize the local board with a specific pattern
 void initialize_local_board(uint8_t *board, int block_start, int block_size) {
     // Fill the local board with the grower pattern
@@ -109,12 +77,10 @@ void initialize_local_board(uint8_t *board, int block_start, int block_size) {
                 board[INDEX(i, j)] = 0;
         }
     }
-
-
 }
 
-// Function to calculate the population of the entire board
-int board_population(uint8_t *board, int block_size) {
+// Function to calculate the population of the local board
+int local_board_popoulation(uint8_t *board, int block_size) {
     int population = 0;
     for (int i = 1; i <= block_size; ++i) {
         for (int j = 0; j < BOARD_SIZE; ++j) {
@@ -178,7 +144,7 @@ void run_game_of_life(uint8_t *current, uint8_t *next, int block_size) {
 
 // Function to calculate the population of the entire board across all processes
 int total_board_population(uint8_t *local_board, int block_size) {
-    int local_population = board_population(local_board, block_size);
+    int local_population = local_board_popoulation(local_board, block_size);
 
     // Use MPI_Allreduce to perform a reduction operation across all processes
     int total_population;
@@ -257,7 +223,8 @@ int main(int argc, char *argv[]) {
 
     for (int iter = 0; iter < MAX_ITERATIONS; ++iter) {
         if (DEBUG_PRINT_RANK_INFO) {
-            printf("Rank %d: Iteration %d, Population = %d\n", rank, iter, board_population(local_board, block_size));
+            printf("Rank %d: Iteration %d, Population = %d\n", rank, iter,
+                   local_board_popoulation(local_board, block_size));
         }
 
         if (DEBUG_PRINT_REGION) {
