@@ -27,7 +27,7 @@
 #define DEBUG_PRINT_RANK_INFO 0
 #define DEBUG_PRINT_REGION 0
 #define DEBUG_RUN_VERIFICATION_CHECKS 0
-#define DEBUG_PRINT_TOTAL_POPULATION 0
+#define DEBUG_PRINT_TOTAL_POPULATION 1
 #define DEBUG_PRINT_EXECUTION_TIME 1
 
 // Include patterns
@@ -220,7 +220,7 @@ int main(int argc, char *argv[]) {
     // Record the start time for measuring execution time
     double start_time = MPI_Wtime();
 
-    for (int iter = 0; iter < MAX_ITERATIONS; ++iter) {
+    for (int iter = 0; iter <= MAX_ITERATIONS; ++iter) {
         if (DEBUG_PRINT_RANK_INFO) {
             // Print the population of the local board for each iteration
             printf("Rank %d: Iteration %d, Population = %d\n", rank, iter,
