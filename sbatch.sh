@@ -25,7 +25,7 @@ for total in "${total_values[@]}"; do
         
         # Ensure the product of processes and threads equals the total
         if [ $((p * t)) -eq $total ]; then
-            echo "Running with $p processes / $t threads"
+            echo "Running with $p processes / $t threads per process"
             export OMP_NUM_THREADS=$t
             time mpirun -np $p --bind-to none ./game_of_life -omp $t
             echo "-----------DONE--------------"
