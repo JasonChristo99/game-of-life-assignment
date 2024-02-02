@@ -217,8 +217,14 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Error initializing MPI.\n");
         exit(EXIT_FAILURE);
     }
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    if (MPI_Comm_rank(MPI_COMM_WORLD, &rank) != MPI_SUCCESS) {
+        fprintf(stderr, "Error in MPI_Comm_rank.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (MPI_Comm_size(MPI_COMM_WORLD, &size) != MPI_SUCCESS) {
+        fprintf(stderr, "Error in MPI_Comm_size.\n");
+        exit(EXIT_FAILURE);
+    }
 
     const bool am_master = 0 == rank;
 
@@ -232,6 +238,11 @@ int main(int argc, char *argv[]) {
     // Allocate memory for the local and next generation boards
     uint8_t *local_board = (uint8_t *) malloc(BOARD_SIZE * (block_size + 2) * sizeof(uint8_t));
     uint8_t *next_gen_board = (uint8_t *) malloc(BOARD_SIZE * (block_size + 2) * sizeof(uint8_t));
+
+    if (local_board == NULL || next_gen_board == NULL) {
+        fprintf(stderr, "Error allocating memory.\n");
+        exit(EXIT_FAILURE);
+    }
 
     // Initialize the local board with a specific pattern
     initialize_local_board(local_board, block_start, block_size);
