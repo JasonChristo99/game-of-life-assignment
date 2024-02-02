@@ -23,8 +23,12 @@
 #define GLIDER_POPULATION 5
 #define BEEHIVE_POPULATION 6
 
-// Number of threads for OpenMP
-// #define NUM_THREADS 4
+// Debug printing controls
+#define DEBUG_PRINT_RANK_INFO 0
+#define DEBUG_PRINT_REGION 0
+#define DEBUG_RUN_VERIFICATION_CHECKS 0
+#define DEBUG_PRINT_TOTAL_POPULATION 0
+#define DEBUG_PRINT_EXECUTION_TIME 1
 
 // Include patterns
 #include "grower.h"
@@ -33,6 +37,7 @@
 
 // Macro to convert 2D indices to a 1D index for a flattened array
 #define INDEX(row, col) ((row) * BOARD_SIZE + (col))
+
 
 int local_board_index_to_global(int row, int col, int startRow, int startCol) {
     return INDEX(row + startRow, col + startCol);
@@ -88,9 +93,7 @@ void write_board(uint8_t *board, char *filename, int iteration) {
 // Function to initialize the local board with a specific pattern
 void initialize_local_board(uint8_t *board, int block_start, int block_size) {
     // Fill the local board with the grower pattern
-    // The grower pattern is larger than the local board, so only a part of it will be copied
-    // Use the GROWER_START_ROW and GROWER_START_COL constants to determine the starting indices
-    // Only copy the part of the pattern that is within the local board boundaries (applicable)
+    // Only the part of the pattern that is within the local board boundaries will be copied
     for (int i = 0; i < block_size + 2; ++i) {
         for (int j = 0; j < BOARD_SIZE; ++j) {
             if (i == 0 || i == block_size + 1) {
@@ -101,7 +104,6 @@ void initialize_local_board(uint8_t *board, int block_start, int block_size) {
             local_coords_to_global(&row_global, &col_global, i, j, block_start, 0);
             if (row_global >= GROWER_START_ROW && row_global < GROWER_START_ROW + GROWER_HEIGHT &&
                 col_global >= GROWER_START_COL && col_global < GROWER_START_COL + GROWER_WIDTH) {
-//                printf("Initializing board[%d][%d] = grower[%d][%d]\n", i, j, row_global - GROWER_START_ROW, col_global - GROWER_START_COL);
                 board[INDEX(i, j)] = grower[row_global - GROWER_START_ROW][col_global - GROWER_START_COL];
             } else
                 board[INDEX(i, j)] = 0;
@@ -174,27 +176,6 @@ void run_game_of_life(uint8_t *current, uint8_t *next, int block_size) {
     }
 }
 
-// Function to perform verification checks at specific iterations
-//void run_verification(uint8_t *board, int iter) {
-//    if (iter == 10) {
-//        int population = board_population(board);
-//        printf("Generation 10: Grower pattern population = %d\n", population);
-//        if (population != GROWER_POPULATION_GEN10) {
-//            printf("ERROR: Incorrect population for generation 10\n");
-//            exit(1);
-//        }
-//    }
-//
-//    if (iter == 100) {
-//        int population = board_population(board);
-//        printf("Generation 100: Grower pattern population = %d\n", population);
-//        if (population != GROWER_POPULATION_GEN100) {
-//            printf("ERROR: Incorrect population for generation 100\n");
-//            exit(1);
-//        }
-//    }
-//}
-
 // Function to calculate the population of the entire board across all processes
 int total_board_population(uint8_t *local_board, int block_size) {
     int local_population = board_population(local_board, block_size);
@@ -207,6 +188,28 @@ int total_board_population(uint8_t *local_board, int block_size) {
     }
 
     return total_population;
+}
+
+// Function to perform verification checks at specific iterations
+void run_verification(uint8_t *board, int iter, int block_size) {
+    // Check total population for specific iterations
+    if (iter == 10) {
+        int total_population = total_board_population(local_board, block_size);
+        printf("Generation 10: Grower pattern population = %d\n", total_population);
+        if (total_population != GROWER_POPULATION_GEN10) {
+            printf("ERROR: Incorrect population for generation 10\n");
+            exit(1);
+        }
+    }
+
+    if (iter == 100) {
+        int total_population = total_board_population(local_board, block_size);
+        printf("Generation 100: Grower pattern population = %d\n", total_population);
+        if (total_population != GROWER_POPULATION_GEN100) {
+            printf("ERROR: Incorrect population for generation 100\n");
+            exit(1);
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -233,7 +236,9 @@ int main(int argc, char *argv[]) {
     int block_start = rank * block_size;
     int block_end = block_start + block_size;
     // Print the block start and end indices for each process
-    // printf("Rank %d: Block start = %d, Block end = %d\n", rank, block_start, block_end);
+    if (DEBUG_PRINT_RANK_INFO) {
+        printf("Rank %d: Block start = %d, Block end = %d\n", rank, block_start, block_end);
+    }
 
     // Allocate memory for the local and next generation boards
     uint8_t *local_board = (uint8_t *) malloc(BOARD_SIZE * (block_size + 2) * sizeof(uint8_t));
@@ -251,17 +256,24 @@ int main(int argc, char *argv[]) {
     double start_time = MPI_Wtime();
 
     for (int iter = 0; iter < MAX_ITERATIONS; ++iter) {
-        // printf("Rank %d: Iteration %d, Population = %d\n", rank, iter, board_population(local_board, block_size));
+        if (DEBUG_PRINT_RANK_INFO) {
+            printf("Rank %d: Iteration %d, Population = %d\n", rank, iter, board_population(local_board, block_size));
+        }
 
-//        print_region(local_board, GROWER_START_ROW, GROWER_START_COL, GROWER_HEIGHT, GROWER_WIDTH);
-        // Verification checks for specific iterations
-//        run_verification(local_board, iter);
-        // Calculate and print the total population of the entire board
-        // Calculate and print the total population of the entire board
-        //int total_population = total_board_population(local_board, block_size);
-        //if (rank == 0) {
-        //    printf("Total population after iteration %d: %d\n", iter, total_population);
-        //}
+        if (DEBUG_PRINT_REGION) {
+            print_region(local_board, GROWER_START_ROW, GROWER_START_COL, GROWER_HEIGHT, GROWER_WIDTH);
+        }
+
+        if (DEBUG_RUN_VERIFICATION_CHECKS) {
+            // Verification checks for specific iterations
+            run_verification(local_board, iter, block_size);
+        }
+
+        if (DEBUG_PRINT_TOTAL_POPULATION && am_master) {
+            // Calculate and print the total population of the entire board
+            int total_population = total_board_population(local_board, block_size);
+            printf("Total population after iteration %d: %d\n", iter, total_population);
+        }
 
         // Communication between neighboring processes using MPI
         // Identify left and right neighbors, set MPI_PROC_NULL if at the boundary
@@ -337,7 +349,9 @@ int main(int argc, char *argv[]) {
     double end_time = MPI_Wtime();
 
     // Print total execution time
-//    printf("Total execution time: %f seconds\n", end_time - start_time);
+    if (DEBUG_PRINT_EXECUTION_TIME && am_master) {
+        printf("Total execution time: %f seconds\n", end_time - start_time);
+    }
 
     // Print the final time : the time taken by the slowest process to complete the execution
     double max_time;
@@ -345,9 +359,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Error in MPI_Reduce operation.\n");
         exit(EXIT_FAILURE);
     }
-    if (am_master) {
-        printf("Max execution time: %f seconds\n", max_time - start_time);
-    }
+    printf("Max execution time: %f seconds\n", max_time - start_time);
 
 
     // Free allocated memory
