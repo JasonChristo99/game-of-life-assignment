@@ -7,7 +7,7 @@
 
 // Constants defining the size of the board and maximum iterations
 #define BOARD_SIZE 3000
-#define MAX_ITERATIONS 110
+#define MAX_ITERATIONS 5000
 
 // Constants defining the starting positions of various patterns on the board
 #define GROWER_START_ROW 1500
@@ -24,7 +24,7 @@
 #define BEEHIVE_POPULATION 6
 
 // Number of threads for OpenMP
-#define NUM_THREADS 16
+// #define NUM_THREADS 4
 
 // Include patterns
 #include "grower.h"
@@ -147,7 +147,7 @@ uint8_t apply_rules(int current_state, int neighbors) {
 
 // Function to run one iteration of the Game of Life for the local region of the board
 void run_game_of_life(uint8_t *current, uint8_t *next, int block_size) {
-#pragma omp parallel for collapse(2) num_threads(NUM_THREADS)
+#pragma omp parallel for collapse(2)
     for (int i = 1; i <= block_size; ++i) {
         for (int j = 0; j < BOARD_SIZE; ++j) {
             // Count neighbors for each cell
@@ -195,11 +195,28 @@ void run_game_of_life(uint8_t *current, uint8_t *next, int block_size) {
 //    }
 //}
 
+// Function to calculate the population of the entire board across all processes
+int total_board_population(uint8_t *local_board, int block_size) {
+    int local_population = board_population(local_board, block_size);
+
+    // Use MPI_Allreduce to perform a reduction operation across all processes
+    int total_population;
+    if (MPI_Allreduce(&local_population, &total_population, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD) != MPI_SUCCESS) {
+        fprintf(stderr, "Error in MPI_Allreduce operation.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    return total_population;
+}
+
 int main(int argc, char *argv[]) {
     int rank, size;
 
     // Start up MPI
-    MPI_Init(&argc, &argv);
+    if (MPI_Init(&argc, &argv) != MPI_SUCCESS) {
+        fprintf(stderr, "Error initializing MPI.\n");
+        exit(EXIT_FAILURE);
+    }
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
@@ -210,7 +227,7 @@ int main(int argc, char *argv[]) {
     int block_start = rank * block_size;
     int block_end = block_start + block_size;
     // Print the block start and end indices for each process
-    printf("Rank %d: Block start = %d, Block end = %d\n", rank, block_start, block_end);
+    // printf("Rank %d: Block start = %d, Block end = %d\n", rank, block_start, block_end);
 
     // Allocate memory for the local and next generation boards
     uint8_t *local_board = (uint8_t *) malloc(BOARD_SIZE * (block_size + 2) * sizeof(uint8_t));
@@ -228,6 +245,12 @@ int main(int argc, char *argv[]) {
 //        print_region(local_board, GROWER_START_ROW, GROWER_START_COL, GROWER_HEIGHT, GROWER_WIDTH);
         // Verification checks for specific iterations
 //        run_verification(local_board, iter);
+        // Calculate and print the total population of the entire board
+        // Calculate and print the total population of the entire board
+        //int total_population = total_board_population(local_board, block_size);
+        //if (rank == 0) {
+        //    printf("Total population after iteration %d: %d\n", iter, total_population);
+        //}
 
         // Communication between neighboring processes using MPI
         // Identify left and right neighbors, set MPI_PROC_NULL if at the boundary
@@ -241,28 +264,53 @@ int main(int argc, char *argv[]) {
         // Initiate non-blocking send operations to left and right neighbors
         if (block_start > 0) {
             // Communication with the left neighbor
-            MPI_Isend(&local_board[INDEX(1, 0)], BOARD_SIZE, MPI_UINT8_T, left_neighbour, 0, MPI_COMM_WORLD,
-                      &left_send_request);
-            MPI_Irecv(&local_board[INDEX(0, 0)], BOARD_SIZE, MPI_UINT8_T, left_neighbour, 0, MPI_COMM_WORLD,
-                      &left_recv_request);
+            if (MPI_Isend(&local_board[INDEX(1, 0)], BOARD_SIZE, MPI_UINT8_T, left_neighbour, 0, MPI_COMM_WORLD,
+                          &left_send_request) != MPI_SUCCESS) {
+                fprintf(stderr, "Error in MPI_Isend to left neighbor.\n");
+                exit(EXIT_FAILURE);
+            }
+            if (MPI_Irecv(&local_board[INDEX(0, 0)], BOARD_SIZE, MPI_UINT8_T, left_neighbour, 0, MPI_COMM_WORLD,
+                          &left_recv_request) != MPI_SUCCESS) {
+                fprintf(stderr, "Error in MPI_Irecv from left neighbor.\n");
+                exit(EXIT_FAILURE);
+            }
         }
 
         if (block_end < BOARD_SIZE) {
             // Communication with the right neighbor
-            MPI_Isend(&local_board[INDEX(block_size, 0)], BOARD_SIZE, MPI_UINT8_T, right_neighbour, 0, MPI_COMM_WORLD,
-                      &right_send_request);
-            MPI_Irecv(&local_board[INDEX(block_size + 1, 0)], BOARD_SIZE, MPI_UINT8_T, right_neighbour, 0,
-                      MPI_COMM_WORLD, &right_recv_request);
+            if (MPI_Isend(&local_board[INDEX(block_size, 0)], BOARD_SIZE, MPI_UINT8_T, right_neighbour, 0,
+                          MPI_COMM_WORLD,
+                          &right_send_request) != MPI_SUCCESS) {
+                fprintf(stderr, "Error in MPI_Isend to right neighbor.\n");
+                exit(EXIT_FAILURE);
+            }
+            if (MPI_Irecv(&local_board[INDEX(block_size + 1, 0)], BOARD_SIZE, MPI_UINT8_T, right_neighbour, 0,
+                          MPI_COMM_WORLD, &right_recv_request) != MPI_SUCCESS) {
+                fprintf(stderr, "Error in MPI_Irecv from right neighbor.\n");
+                exit(EXIT_FAILURE);
+            }
         }
 
         // Wait for completion of all non-blocking communication operations
         if (block_start > 0) {
-            MPI_Wait(&left_send_request, MPI_STATUS_IGNORE);
-            MPI_Wait(&left_recv_request, MPI_STATUS_IGNORE);
+            if (MPI_Wait(&left_send_request, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
+                fprintf(stderr, "Error in MPI_Wait for left_send_request.\n");
+                exit(EXIT_FAILURE);
+            }
+            if (MPI_Wait(&left_recv_request, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
+                fprintf(stderr, "Error in MPI_Wait for left_recv_request.\n");
+                exit(EXIT_FAILURE);
+            }
         }
         if (block_end < BOARD_SIZE) {
-            MPI_Wait(&right_send_request, MPI_STATUS_IGNORE);
-            MPI_Wait(&right_recv_request, MPI_STATUS_IGNORE);
+            if (MPI_Wait(&right_send_request, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
+                fprintf(stderr, "Error in MPI_Wait for right_send_request.\n");
+                exit(EXIT_FAILURE);
+            }
+            if (MPI_Wait(&right_recv_request, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
+                fprintf(stderr, "Error in MPI_Wait for right_recv_request.\n");
+                exit(EXIT_FAILURE);
+            }
         }
 
         // Run one iteration of the Game of Life for the local region
@@ -282,7 +330,10 @@ int main(int argc, char *argv[]) {
 
     // Print the final time : the time taken by the slowest process to complete the execution
     double max_time;
-    MPI_Reduce(&end_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+    if (MPI_Reduce(&end_time, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD) != MPI_SUCCESS) {
+        fprintf(stderr, "Error in MPI_Reduce operation.\n");
+        exit(EXIT_FAILURE);
+    }
     if (am_master) {
         printf("Max execution time: %f seconds\n", max_time - start_time);
     }
@@ -293,7 +344,10 @@ int main(int argc, char *argv[]) {
     free(next_gen_board);
 
     // Finalize MPI
-    MPI_Finalize();
+    if (MPI_Finalize() != MPI_SUCCESS) {
+        fprintf(stderr, "Error finalizing MPI.\n");
+        exit(EXIT_FAILURE);
+    }
 
     return 0;
 }
