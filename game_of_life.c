@@ -38,11 +38,7 @@
 // Macro to convert 2D indices to a 1D index for a flattened array
 #define INDEX(row, col) ((row) * BOARD_SIZE + (col))
 
-
-int local_board_index_to_global(int row, int col, int startRow, int startCol) {
-    return INDEX(row + startRow, col + startCol);
-}
-
+// Function to convert local coordinates to global coordinates
 void local_coords_to_global(int *global_row, int *global_col, int row, int col, int startRow, int startCol) {
     *global_row = row + startRow;
     *global_col = col + startCol;
@@ -65,6 +61,7 @@ void initialize_local_board(uint8_t *board, int block_start, int block_size) {
     for (int i = 0; i < block_size + 2; ++i) {
         for (int j = 0; j < BOARD_SIZE; ++j) {
             if (i == 0 || i == block_size + 1) {
+                // Set boundary rows to 0
                 board[INDEX(i, j)] = 0;
                 continue;
             }
@@ -72,15 +69,17 @@ void initialize_local_board(uint8_t *board, int block_start, int block_size) {
             local_coords_to_global(&row_global, &col_global, i, j, block_start, 0);
             if (row_global >= GROWER_START_ROW && row_global < GROWER_START_ROW + GROWER_HEIGHT &&
                 col_global >= GROWER_START_COL && col_global < GROWER_START_COL + GROWER_WIDTH) {
+                // Copy the grower pattern to the local board
                 board[INDEX(i, j)] = grower[row_global - GROWER_START_ROW][col_global - GROWER_START_COL];
             } else
+                // Set cells outside the grower pattern to 0
                 board[INDEX(i, j)] = 0;
         }
     }
 }
 
 // Function to calculate the population of the local board
-int local_board_popoulation(uint8_t *board, int block_size) {
+int local_board_population(uint8_t *board, int block_size) {
     int population = 0;
     for (int i = 1; i <= block_size; ++i) {
         for (int j = 0; j < BOARD_SIZE; ++j) {
@@ -144,7 +143,7 @@ void run_game_of_life(uint8_t *current, uint8_t *next, int block_size) {
 
 // Function to calculate the population of the entire board across all processes
 int total_board_population(uint8_t *local_board, int block_size) {
-    int local_population = local_board_popoulation(local_board, block_size);
+    int local_population = local_board_population(local_board, block_size);
 
     // Use MPI_Allreduce to perform a reduction operation across all processes
     int total_population;
@@ -201,8 +200,8 @@ int main(int argc, char *argv[]) {
     int block_size = BOARD_SIZE / size;
     int block_start = rank * block_size;
     int block_end = block_start + block_size;
-    // Print the block start and end indices for each process
     if (DEBUG_PRINT_RANK_INFO) {
+        // Print the block start and end indices for each process
         printf("Rank %d: Block start = %d, Block end = %d\n", rank, block_start, block_end);
     }
 
@@ -215,7 +214,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    // Initialize the local board with a specific pattern
+    // Initialize the local board with the grower pattern
     initialize_local_board(local_board, block_start, block_size);
 
     // Record the start time for measuring execution time
@@ -223,8 +222,9 @@ int main(int argc, char *argv[]) {
 
     for (int iter = 0; iter < MAX_ITERATIONS; ++iter) {
         if (DEBUG_PRINT_RANK_INFO) {
+            // Print the population of the local board for each iteration
             printf("Rank %d: Iteration %d, Population = %d\n", rank, iter,
-                   local_board_popoulation(local_board, block_size));
+                   local_board_population(local_board, block_size));
         }
 
         if (DEBUG_PRINT_REGION) {
